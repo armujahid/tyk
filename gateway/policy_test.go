@@ -282,23 +282,28 @@ func (s *Test) TestPrepareApplyPolicies() (*BaseMiddleware, []testApplyPoliciesD
 				},
 			}},
 		},
-		"restricted-types1": {
-			ID: "restricted_types_1",
+
+		"field-restriction-list1": {
+			ID: "field_restriction_list_1",
 			AccessRights: map[string]user.AccessDefinition{
 				"a": {
-					RestrictedTypes: []graphql.Type{
-						{Name: "Country", Fields: []string{"code", "name"}},
-						{Name: "Person", Fields: []string{"name", "height"}},
+					FieldRestrictionList: []graphql.FieldRestrictionList{
+						{Kind: graphql.BlockList, Types: []graphql.Type{
+							{Name: "Country", Fields: []string{"code", "name"}},
+							{Name: "Person", Fields: []string{"name", "height"}},
+						}},
 					},
 				}},
 		},
-		"restricted-types2": {
-			ID: "restricted_types_2",
+		"field-restriction-list2": {
+			ID: "field_restriction_list_2",
 			AccessRights: map[string]user.AccessDefinition{
 				"a": {
-					RestrictedTypes: []graphql.Type{
-						{Name: "Country", Fields: []string{"code", "phone"}},
-						{Name: "Person", Fields: []string{"name", "mass"}},
+					FieldRestrictionList: []graphql.FieldRestrictionList{
+						{Kind: graphql.BlockList, Types: []graphql.Type{
+							{Name: "Country", Fields: []string{"code", "phone"}},
+							{Name: "Person", Fields: []string{"name", "mass"}},
+						}},
 					},
 				}},
 		},
@@ -660,13 +665,15 @@ func (s *Test) TestPrepareApplyPolicies() (*BaseMiddleware, []testApplyPoliciesD
 		},
 		{
 			name:     "Merge restricted fields for the same GraphQL API",
-			policies: []string{"restricted-types1", "restricted-types2"},
+			policies: []string{"field-restriction-list1", "field-restriction-list2"},
 			sessMatch: func(t *testing.T, s *user.SessionState) {
 				want := map[string]user.AccessDefinition{
 					"a": { // It should get intersection of restricted types.
-						RestrictedTypes: []graphql.Type{
-							{Name: "Country", Fields: []string{"code"}},
-							{Name: "Person", Fields: []string{"name"}},
+						FieldRestrictionList: []graphql.FieldRestrictionList{
+							{Kind: graphql.BlockList, Types: []graphql.Type{
+								{Name: "Country", Fields: []string{"code"}},
+								{Name: "Person", Fields: []string{"name"}},
+							}},
 						},
 						Limit: user.APILimit{},
 					},

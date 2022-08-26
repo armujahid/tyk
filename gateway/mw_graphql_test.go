@@ -459,14 +459,18 @@ func TestGraphQLMiddleware_EngineMode(t *testing.T) {
 								api.APIID: {
 									APIID:   api.APIID,
 									APIName: api.Name,
-									RestrictedTypes: []gql.Type{
+									FieldRestrictionList: []gql.FieldRestrictionList{
 										{
-											Name:   "Query",
-											Fields: []string{"countries"},
+											Kind: gql.BlockList,
+											Types: []gql.Type{
+												{
+													Name:   "Query",
+													Fields: []string{"countries"},
+												},
+											},
 										},
 									},
-								},
-							}
+								}}
 						})
 
 						wsConn, _, err := websocket.DefaultDialer.Dial(baseURL, map[string][]string{

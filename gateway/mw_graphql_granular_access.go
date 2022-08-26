@@ -78,22 +78,19 @@ type GraphqlGranularAccessResult struct {
 type GraphqlGranularAccessChecker struct{}
 
 func (GraphqlGranularAccessChecker) CheckGraphqlRequestFieldAllowance(gqlRequest *graphql.Request, accessDef *user.AccessDefinition, schema *graphql.Schema) GraphqlGranularAccessResult {
-	if len(accessDef.RestrictedTypes) == 0 {
+	if len(accessDef.FieldRestrictionList) == 0 {
 		return GraphqlGranularAccessResult{failReason: GranularAccessFailReasonNone}
 	}
 
-	restrictedFieldsList := graphql.FieldRestrictionList{
-		Kind:  graphql.BlockList,
-		Types: accessDef.RestrictedTypes,
-	}
+	for _, fieldRestrictionList := range accessDef.FieldRestrictionList {
+		result, err := gqlRequest.ValidateFieldRestrictions(schema, fieldRestrictionList, graphql.DefaultFieldsValidator{})
+		if err != nil {
+			return GraphqlGranularAccessResult{failReason: GranularAccessFailReasonInternalError, internalErr: err}
+		}
 
-	result, err := gqlRequest.ValidateFieldRestrictions(schema, restrictedFieldsList, graphql.DefaultFieldsValidator{})
-	if err != nil {
-		return GraphqlGranularAccessResult{failReason: GranularAccessFailReasonInternalError, internalErr: err}
-	}
-
-	if !result.Valid || (result.Errors != nil && result.Errors.Count() > 0) {
-		return GraphqlGranularAccessResult{failReason: GranularAccessFailReasonValidationError, validationResult: &result}
+		if !result.Valid || (result.Errors != nil && result.Errors.Count() > 0) {
+			return GraphqlGranularAccessResult{failReason: GranularAccessFailReasonValidationError, validationResult: &result}
+		}
 	}
 
 	return GraphqlGranularAccessResult{failReason: GranularAccessFailReasonNone}

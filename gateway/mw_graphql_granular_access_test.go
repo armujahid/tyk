@@ -12,7 +12,7 @@ import (
 	"github.com/TykTechnologies/tyk/user"
 )
 
-func TestGraphQL_RestrictedTypes(t *testing.T) {
+func TestGraphQL_FieldRestrictionList(t *testing.T) {
 	g := StartTest(nil)
 	defer g.Close()
 
@@ -27,10 +27,15 @@ func TestGraphQL_RestrictedTypes(t *testing.T) {
 			api.APIID: {
 				APIID:   api.APIID,
 				APIName: api.Name,
-				RestrictedTypes: []graphql.Type{
+				FieldRestrictionList: []graphql.FieldRestrictionList{
 					{
-						Name:   "Country",
-						Fields: []string{"code"},
+						Kind: graphql.BlockList,
+						Types: []graphql.Type{
+							{
+								Name:   "Country",
+								Fields: []string{"code"},
+							},
+						},
 					},
 				},
 			},
@@ -42,11 +47,15 @@ func TestGraphQL_RestrictedTypes(t *testing.T) {
 			api.APIID: {
 				APIID:   api.APIID,
 				APIName: api.Name,
-				RestrictedTypes: []graphql.Type{
+				FieldRestrictionList: []graphql.FieldRestrictionList{
 					{
-						Name:   "Country",
-						Fields: []string{"name"},
-					},
+						Kind: graphql.BlockList,
+						Types: []graphql.Type{
+							{
+								Name:   "Country",
+								Fields: []string{"name"},
+							},
+						}},
 				},
 			},
 		}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/TykTechnologies/graphql-go-tools/pkg/graphql"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -399,11 +400,28 @@ func (t BaseMiddleware) ApplyPolicies(session *user.SessionState) error {
 							}
 						}
 
-						for _, t := range v.RestrictedTypes {
-							for ri, rt := range r.RestrictedTypes {
-								if t.Name == rt.Name {
-									r.RestrictedTypes[ri].Fields = intersection(rt.Fields, t.Fields)
+						restrictionMap := make(map[graphql.FieldRestrictionListKind]map[string][]string)
+						for _, t := range v.FieldRestrictionList {
+							fieldsByName, ok := restrictionMap[t.Kind]
+							if !ok {
+								fieldsByName = make(map[string][]string)
+								restrictionMap[t.Kind] = fieldsByName
+							}
+							for _, ty := range t.Types {
+								fieldsByName[ty.Name] = ty.Fields
+							}
+						}
+						for ri, rt := range r.FieldRestrictionList {
+							for i, ty := range rt.Types {
+								fieldsByName, ok := restrictionMap[rt.Kind]
+								if !ok {
+									continue
 								}
+								fields, ok := fieldsByName[ty.Name]
+								if !ok {
+									continue
+								}
+								r.FieldRestrictionList[ri].Types[i].Fields = intersection(fields, ty.Fields)
 							}
 						}
 

@@ -18,23 +18,23 @@ import (
 )
 
 type DBAccessDefinition struct {
-	APIName           string                       `json:"apiname"`
-	APIID             string                       `json:"apiid"`
-	Versions          []string                     `json:"versions"`
-	AllowedURLs       []user.AccessSpec            `bson:"allowed_urls" json:"allowed_urls"` // mapped string MUST be a valid regex
-	RestrictedTypes   []graphql.Type               `json:"restricted_types"`
-	FieldAccessRights []user.FieldAccessDefinition `json:"field_access_rights"`
-	Limit             *user.APILimit               `json:"limit"`
+	APIName              string                         `json:"apiname"`
+	APIID                string                         `json:"apiid"`
+	Versions             []string                       `json:"versions"`
+	AllowedURLs          []user.AccessSpec              `bson:"allowed_urls" json:"allowed_urls"` // mapped string MUST be a valid regex
+	FieldRestrictionList []graphql.FieldRestrictionList `json:"field_restriction_list"`
+	FieldAccessRights    []user.FieldAccessDefinition   `json:"field_access_rights"`
+	Limit                *user.APILimit                 `json:"limit"`
 }
 
 func (d *DBAccessDefinition) ToRegularAD() user.AccessDefinition {
 	ad := user.AccessDefinition{
-		APIName:           d.APIName,
-		APIID:             d.APIID,
-		Versions:          d.Versions,
-		AllowedURLs:       d.AllowedURLs,
-		RestrictedTypes:   d.RestrictedTypes,
-		FieldAccessRights: d.FieldAccessRights,
+		APIName:              d.APIName,
+		APIID:                d.APIID,
+		Versions:             d.Versions,
+		AllowedURLs:          d.AllowedURLs,
+		FieldRestrictionList: d.FieldRestrictionList,
+		FieldAccessRights:    d.FieldAccessRights,
 	}
 
 	if d.Limit != nil {
